@@ -4,6 +4,8 @@ Intune Endpoint Analytics local admin group based solution.
 
 Purpose of this script:
 -
+create_app.ps1 will create the AzureAD app registration with the group.read.all permissions. It is required to grant consent for all users.
+
 Monitoring the local administrators groups for (hybrid/AzureAD joined machines).
 It does this based on AzureAD groups. Per device one AzureAD group should be created.
 
