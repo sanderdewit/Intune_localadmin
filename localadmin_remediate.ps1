@@ -15,7 +15,7 @@ $ClientID = '<CLIENTID>'
 $ClientSecret = '<CLIENT secret>'
 $TenantName = 'tenant.onmicrosoft.com'
 $loggingpath = 'c:\programdata\scripts'
-
+$domain = 'userdomain' #use for the on-premises domain for AzureAD sourced users (no aadconnect), use AzureAD
 
 ########################################
 # start script
@@ -102,7 +102,7 @@ try
         if ($desiredadmins -notcontains $localadmin)
         {
 	if (!(Get-LocalUser -Name $localadmin -ErrorAction Ignore) -and ($localadmin -notlike 'S-1-12*')){
-         Remove-LocalGroupMember -Group Administrators -Member "$ENV:USERDOMAIN\$localadmin" -verbose -ErrorAction Continue
+         Remove-LocalGroupMember -Group Administrators -Member "$Domain\$localadmin" -verbose -ErrorAction Continue
 	 }
 	 else 
 	  {
