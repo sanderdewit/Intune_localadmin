@@ -37,3 +37,6 @@ FAQ:
 How do I use this information in my security monitoring?
 - Via the Graph API you can query the devicehealth script. https://docs.microsoft.com/en-us/graph/api/intune-devices-devicehealthscript-get?view=graph-rest-beta
 This will allow you to read out the status and link it the other events.
+
+How do I find the SIDs for my global/device administrator?
+- The script get-info.ps1 will provide all the information necessary to fill in the parameters.
