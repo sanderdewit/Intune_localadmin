@@ -1,5 +1,5 @@
 # Intune_localadmin
-Intune Endpoint Analytics local admin group based solution.
+Intune Endpoint Analytics local admin group based solution. It adds an AzureAD group to the local administrator group and monitors the local administrator so no other entries are added.
 
 
 Purpose of this script:
