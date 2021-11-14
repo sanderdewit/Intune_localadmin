@@ -41,8 +41,7 @@ Go to Reports, Endpoint Analytics, Proactive Remedations and choose create scrip
 - Run this script using the logged-on credentials: No
 - Enforce script signature check: No (unless you signed the script with your own certificate, which is generally a good practice)
 - Run script in 64-bit PowerShell: Yes
-
-![proactive remediation](https://user-images.githubusercontent.com/30201578/141688220-c6fc9634-6cda-4ee4-9d58-5d11f854c726.png)
+![image](https://user-images.githubusercontent.com/30201578/141688331-db7fee26-9f42-4e98-a4e4-7127fe1fc70e.png)
 
 
 FAQ:
