@@ -14,7 +14,7 @@ It is required to grant consent for all users.
 This solution monitors the local administrators groups for (hybrid/AzureAD joined machines).
 It does this based on AzureAD groups. Per device one AzureAD group should be created. The azautomation.ps1 script will help to automate this process.
 
-It uses Intune Endpoint Analytics Proactive Remediations to schedule the localadmin_check script periodically.
+It uses Intune Endpoint Analytics Proactive Remediations to schedule the localadmin_check script periodically. https://endpoint.microsoft.com/#blade/Microsoft_Intune_Enrollment/UXAnalyticsMenu/proactiveRemediations
 Once a failure is detected it will run the remediate script to fix the issue.
 Autopilot does leverage a default account during installation, so exception have been build in the prevent this script from executing during this phase.
 During the AutoPilot/PreDeployment phase, the security group will be added, but no users will be removed. It will not report an error in this case to keep the logging clean.
@@ -40,3 +40,6 @@ This will allow you to read out the status and link it the other events.
 
 How do I find the SIDs for my global/device administrator?
 - The script get-info.ps1 will provide all the information necessary to fill in the parameters.
+
+The script doesn't work, what should I do?
+- Make sure the Run script in 64-bit PowerShell is enabled.
