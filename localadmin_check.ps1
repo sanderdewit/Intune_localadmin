@@ -2,11 +2,10 @@
 #
 # Script Name:     Detect_localadmins.ps1
 # Description:     Detect localadmin, local admin user, device admin, global admin and the sec group for LA.
-# version:         v0.2
+# version:         v0.3
 #=============================================================================================================================
 
 # Define Variables
-$localadmin = '<localadmin>'
 $deviceadmin = '<insert SID>'
 $globaladmin = '<insert SID>'
 $serialnumber = ($(Get-CimInstance win32_bios).SerialNumber)
@@ -22,6 +21,9 @@ $loggingpath = 'c:\programdata\scripts'
 
 #detect internet
 if (!(Get-NetRoute | ? DestinationPrefix -eq '0.0.0.0/0' | Get-NetIPInterface | Where ConnectionState -eq 'Connected')){ Throw 'no connection'}
+if (!([environment]::OSVersion.Version.build -ge '19041')){throw 'Windows lower than 2004 detected'}
+import-module Microsoft.PowerShell.LocalAccounts
+$localadmin = ((Get-LocalUser | Select-Object -First 1).SID).AccountDomainSID.ToString()+'-503'
 
 function get-laGroup {
     param (
@@ -57,7 +59,7 @@ function Connect-MsGraphAsApplication {
     $OAuth = Invoke-RestMethod -Method Post -Uri $LoginUrl/$TenantName/oauth2/token?api-version=1.0 -Body $Body
     $OAuth.access_token
 }
- 
+
 $AccessToken = Connect-MsGraphAsApplication -TenantName $TenantName -ClientID $ClientID -ClientSecret $ClientSecret
 # Create header
 $Header = @{
@@ -84,7 +86,7 @@ try
     $administratorsGroup = ([ADSI]"WinNT://$env:COMPUTERNAME").psbase.children.find("Administrators")
     $administratorsGroupMembers= $administratorsGroup.psbase.invoke("Members")
     foreach ($administrator in $administratorsGroupMembers) {
-        $localAdministrators += $administrator.GetType().InvokeMember('Name','GetProperty',$null,$administrator,$null)
+        $localAdministrators += (New-Object System.Security.Principal.SecurityIdentifier($administrator.GetType().InvokeMember('ObjectSid','GetProperty',$null,$administrator,$null),0)).value
     }
     $compare = Compare-Object -ReferenceObject $desiredadmins -DifferenceObject $localAdministrators
     if ($compare -eq $null){
