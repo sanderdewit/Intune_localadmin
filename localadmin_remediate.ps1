@@ -2,20 +2,18 @@
 #
 # Script Name:     Remediate_localadmins.ps1
 # Description:     Remidiate local admins to match, sec group, deviceadmin, globaladmin & local-admin, make sure to run as 64 bits ps
-# version:         v0.2
+# version:         v0.3
 #=============================================================================================================================
 
 # Define Variables
-$localadmin = '<localadmin>'
-$deviceadmin = '<insert SID>'
-$globaladmin = '<insert SID>'
+$DeviceAdmin = '<insert SID>'
+$GlobalAdmin = '<insert SID>'
 $serialnumber = ($(Get-CimInstance win32_bios).SerialNumber)
 $groupnaming = "SECGRP-LA-PC-$($serialnumber)"
 $ClientID = '<CLIENTID>'
 $ClientSecret = '<CLIENT secret>'
 $TenantName = 'tenant.onmicrosoft.com'
 $loggingpath = 'c:\programdata\scripts'
-$domain = 'userdomain' #use for the on-premises domain for AzureAD sourced users (no aadconnect), use AzureAD
 
 ########################################
 # start script
@@ -54,8 +52,8 @@ function Connect-MsGraphAsApplication {
         $TenantName
     )
     # Declarations.
-    $LoginUrl = "https://login.microsoft.com"
-    $ResourceUrl = "https://graph.microsoft.com"
+    $LoginUrl = 'https://login.microsoft.com'
+    $ResourceUrl = 'https://graph.microsoft.com'
     # Force TLS 1.2.
     [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
   
@@ -73,52 +71,53 @@ $Header = @{
 $serialnumber = ($(Get-CimInstance win32_bios).SerialNumber)
 $Uri = "https://graph.microsoft.com/v1.0/groups?$`Filter=displayname eq '$($groupnaming)'"
 # Fetch relevant group
-$GroupsRequest = Invoke-RestMethod -Uri $Uri -Headers $Header -Method Get -ContentType "application/json"
+$GroupsRequest = Invoke-RestMethod -Uri $Uri -Headers $Header -Method Get -ContentType 'application/json'
 $Group = $GroupsRequest.Value
 return $($Group[0].securityIdentifier)
 }
 
 
 if (!(test-path $loggingpath)){New-Item $loggingpath -Force -ItemType Directory}
-$lagroup = get-laGroup -ClientID $ClientID -ClientSecret $ClientSecret -TenantName $TenantName
 Start-Transcript -Path "$loggingpath\localadmin.log" #choose to overwrite, if you want to append, add -append
-$localAdministrators = @()
+$localAdmin = ((Get-LocalUser | Select-Object -First 1).SID).AccountDomainSID.ToString()+'-500' #built-in localadmin is always SID 500, account should be disabled
+$localAdmins = @()
 $desiredadmins = @()
-$desiredadmins += $localadmin
-$desiredadmins += $deviceadmin
-$desiredadmins += $globaladmin
+$desiredadmins += $localAdmin
+$desiredadmins += $DeviceAdmin
+$desiredadmins += $GlobalAdmin
+try  {
+      if (get-laGroup -ClientID $ClientID -ClientSecret $ClientSecret -TenantName $TenantName)
+      {
+      $desiredAdmins += get-laGroup -ClientID $ClientID -ClientSecret $ClientSecret -TenantName $TenantName
+      }
+     }
+catch{
+      throw ('Unable to retrieve AzureAD group')
+     }
 
 try 
 {
-    $desiredadmins += $lagroup
     $administratorsGroup = ([ADSI]"WinNT://$env:COMPUTERNAME").psbase.children.find("Administrators")
     $administratorsGroupMembers= $administratorsGroup.psbase.invoke("Members")
        foreach ($administrator in $administratorsGroupMembers) {
-        $localAdministrators += $administrator.GetType().InvokeMember('Name','GetProperty',$null,$administrator,$null)
+        $localAdmins += (New-Object System.Security.Principal.SecurityIdentifier($administrator.GetType().InvokeMember('objectSid','GetProperty',$null,$administrator,$null),0)).value
        }
        #remove forbidden local administrators
-       foreach ($localadmin in $localAdministrators)
+       foreach ($Admin in $localAdmins)
        {
-        if ($desiredadmins -notcontains $localadmin)
+        if ($desiredadmins -notcontains $Admin)
         {
-	if (!(Get-LocalUser -Name $localadmin -ErrorAction Ignore) -and ($localadmin -notlike 'S-1-12*')){
-         Remove-LocalGroupMember -Group Administrators -Member "$Domain\$localadmin" -verbose -ErrorAction Continue
-	 }
-	 else 
-	  {
-	   Remove-LocalGroupMember -Group Administrators -Member $localadmin -verbose -ErrorAction Continue
-	  }
+	   Remove-LocalGroupMember -Group Administrators -Member $Admin -verbose -ErrorAction Continue
         }
        }
        #adding missing local administrators
-       foreach ($localadmin in $desiredadmins)
+       foreach ($Admin in $desiredadmins)
        {
-        if ($localAdministrators -notcontains $localadmin)
+        if ($localAdmins -notcontains $Admin)
         {
-         add-LocalGroupMember -Group Administrators -Member $localadmin -verbose
+         add-LocalGroupMember -Group Administrators -Member $Admin -verbose
         }
        }
-
 }
 catch 
 { 
