@@ -32,6 +32,19 @@ This group is then added to the local administrators groups. Other administrator
 Please review the parameters and entered your own information.
 For the remediation script a log will be written in c:\programdata\scripts\localadmin.log
 
+Setup:
+-
+Go to the Intune portal (endpoint.microsoft.com).
+Go to Reports, Endpoint Analytics, Proactive Remedations and choose create script package.
+- Upload here the check script and the remediation script
+- make sure the following settings are correct
+- Run this script using the logged-on credentials: No
+- Enforce script signature check: No (unless you signed the script with your own certificate, which is generally a good practice)
+- Run script in 64-bit PowerShell: Yes
+
+![proactive remediation](https://user-images.githubusercontent.com/30201578/141688220-c6fc9634-6cda-4ee4-9d58-5d11f854c726.png)
+
+
 FAQ:
 -
 How do I use this information in my security monitoring?
@@ -43,3 +56,8 @@ How do I find the SIDs for my global/device administrator?
 
 The script doesn't work, what should I do?
 - Make sure the Run script in 64-bit PowerShell is enabled.
+
+When uploading the script, I notice some strange characters.
+- Make sure the file is saved and uploaded in the UTF8 format.
+
+
