@@ -17,6 +17,7 @@ It does this based on AzureAD groups. Per device one AzureAD group should be cre
 It uses Intune Endpoint Analytics Proactive Remediations to schedule the localadmin_check script periodically.
 Once a failure is detected it will run the remediate script to fix the issue.
 Autopilot does leverage a default account during installation, so exception have been build in the prevent this script from executing during this phase.
+During the AutoPilot/PreDeployment phase, the security group will be added, but no users will be removed. It will not report an error in this case to keep the logging clean.
 
 
 The script expects the following users in the local administrators groups
@@ -30,3 +31,9 @@ This group is then added to the local administrators groups. Other administrator
 
 Please review the parameters and entered your own information.
 For the remediation script a log will be written in c:\programdata\scripts\localadmin.log
+
+FAQ:
+-
+How do I use this information in my security monitoring?
+- Via the Graph API you can query the devicehealth script. https://docs.microsoft.com/en-us/graph/api/intune-devices-devicehealthscript-get?view=graph-rest-beta
+This will allow you to read out the status and link it the other events.
