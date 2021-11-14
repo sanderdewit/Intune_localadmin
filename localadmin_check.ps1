@@ -23,7 +23,7 @@ $loggingpath = 'c:\programdata\scripts'
 if (!(Get-NetRoute | ? DestinationPrefix -eq '0.0.0.0/0' | Get-NetIPInterface | Where ConnectionState -eq 'Connected')){ Throw 'no connection'}
 if (!([environment]::OSVersion.Version.build -ge '19041')){throw 'Windows lower than 2004 detected'}
 import-module Microsoft.PowerShell.LocalAccounts
-$localadmin = ((Get-LocalUser | Select-Object -First 1).SID).AccountDomainSID.ToString()+'-503'
+$localadmin = ((Get-LocalUser | Select-Object -First 1).SID).AccountDomainSID.ToString()+'-500' #built-in localadmin is always SID 500, account should be disabled
 
 function get-laGroup {
     param (
